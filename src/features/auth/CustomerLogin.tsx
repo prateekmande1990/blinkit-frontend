@@ -1,6 +1,8 @@
 import {
+  Alert,
   Animated,
   Image,
+  Keyboard,
   SafeAreaView,
   StyleSheet,
   Text,
@@ -16,11 +18,15 @@ import CustomSafeAreaView from '@components/global/CustomSafeAreaView';
 import ProductSlider from '@components/Login/ProductSlider';
 import {resetAndNavigate} from '@utils/NavigationUtils';
 import CustomText from '@components/ui/CustomText';
-import {Colors, Fonts} from '@utils/Constants';
+import {Colors, Fonts, lightColors} from '@utils/Constants';
 import CustomInput from '@components/ui/CustomInput';
 import CustomButton from '@components/ui/CustomButton';
 import useKeyBoardOffsetHeight from '@utils/useKeyBoardOffsetHeight';
 import {RFValue} from 'react-native-responsive-fontsize';
+import LinearGradient from 'react-native-linear-gradient';
+import {customerLogin} from '@service/authService';
+
+const bottomColors = [...lightColors].reverse();
 
 const CustomerLogin: FC = () => {
   const [phoneNumber, setPhoneNumber] = useState<string>('');
@@ -46,7 +52,19 @@ const CustomerLogin: FC = () => {
     }
   }, [keyboardOffsetHeight]);
 
-  const handleAuth = async () => {};
+  const handleAuth = async () => {
+    Keyboard.dismiss();
+    setLoding(true);
+
+    try {
+      await customerLogin(phoneNumber);
+      resetAndNavigate('ProductDashboard');
+    } catch (error) {
+      Alert.alert('Login Failed');
+    } finally {
+      setLoding(false);
+    }
+  };
   const handleGesture = ({nativeEvent}: any) => {
     if (nativeEvent.state === State.END) {
       const {translationX, translationY} = nativeEvent;
@@ -79,6 +97,7 @@ const CustomerLogin: FC = () => {
               keyboardShouldPersistTaps="handled"
               contentContainerStyle={styles.subContainer}
               style={{transform: [{translateY: animatedValue}]}}>
+              <LinearGradient colors={bottomColors} style={styles.gradient} />
               <View style={styles.content}>
                 <Image
                   source={require('@assets/images/logo.png')}
@@ -180,5 +199,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8f9fc',
     width: '100%',
     color: '#ccc',
+  },
+  gradient: {
+    paddingTop: 60,
+    width: '100%',
   },
 });
